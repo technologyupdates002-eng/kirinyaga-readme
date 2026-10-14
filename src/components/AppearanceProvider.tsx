@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import morning from '@/assets/backgrounds/morning.png.asset.json';
 import { APPEARANCE_STORAGE_KEY, BACKGROUND_INTERVAL_MS, MORNING_DURATION_MS, MORNING_STORAGE_KEY, nairobiDay, nextBackground, readAppearanceIndex, shouldShowMorning } from '@/lib/appearance';
 import { Button } from '@/components/ui';
 import { Pause, Play } from 'lucide-react';
