@@ -10,7 +10,7 @@ import { mockPublic } from '@/api/mock';
 import { formatDate, initials, classNames } from '@/lib/format';
 import type { WebsiteContent, LeadershipPerson } from '@/types';
 
-const HERO_IMAGE = '/images/image.png';
+const HERO_IMAGE = '/images/image%20copy%202.png';
 const ABOUT_IMAGE = '/images/image%20copy.png';
 
 const stats = [
