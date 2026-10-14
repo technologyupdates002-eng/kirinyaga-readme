@@ -273,7 +273,7 @@ class TreasurerPortalController extends PortalController
     {
         $this->requireAnyRole($request, ['treasurer', 'admin']);
         // Heavy statement pull runs on the queue; the dashboard polls status.
-        $account = (string) config('coop.account_number', env('COOP_ACCOUNT_NUMBER', ''));
+        $account = (string) config('coop_bank.account_number', '');
         if ($account === '') {
             throw new HttpException(422, 'bank_not_configured', 'Bank account number is not configured on the server.');
         }
