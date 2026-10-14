@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import morning from '@/assets/backgrounds/morning.png.asset.json';
 import { APPEARANCE_STORAGE_KEY, BACKGROUND_INTERVAL_MS, MORNING_DURATION_MS, MORNING_STORAGE_KEY, nairobiDay, nextBackground, readAppearanceIndex, shouldShowMorning } from '@/lib/appearance';
 import { Button } from '@/components/ui';
 import { Pause, Play } from 'lucide-react';
@@ -7,6 +6,10 @@ import { Pause, Play } from 'lucide-react';
 export type AppearanceTheme = { name: string; theme: string; url: string; swatch: string };
 
 export const backgrounds: AppearanceTheme[] = [
+  { name: 'Sky', theme: 'sky', url: '/images/themes/sky.webp', swatch: '#42aabc' },
+  { name: 'Golden', theme: 'gold', url: '/images/themes/gold.webp', swatch: '#c78c27' },
+  { name: 'Crimson', theme: 'crimson', url: '/images/themes/crimson.png', swatch: '#ac193c' },
+  { name: 'Pearl', theme: 'pearl', url: '/images/themes/pearl.webp', swatch: '#b59b55' },
   { name: 'Aurora', theme: 'aurora', url: '/images/image%20copy%202.png', swatch: '#36c8bd' },
   { name: 'Cloud', theme: 'cloud', url: '/images/image.png', swatch: '#6687d5' },
   { name: 'Focus', theme: 'focus', url: '/images/image%20copy.png', swatch: '#416bc9' },
@@ -87,7 +90,7 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
       </div>
       <div className="app-experience" inert={showMorning}>{children}</div>
       {showMorning && <div className="morning-screen" role="status" aria-label="Good morning">
-        <img src={morning.url} alt="Good Morning! Be a whisper of love, a spark of joy, and a calm of peace." onLoad={() => setMorningReady(true)} onError={() => setShowMorning(false)} />
+        <img src={'/images/themes/morning.png'} alt="Good Morning! Be a whisper of love, a spark of joy, and a calm of peace." onLoad={() => setMorningReady(true)} onError={() => setShowMorning(false)} />
       </div>}
     </AppearanceContext.Provider>
   );
