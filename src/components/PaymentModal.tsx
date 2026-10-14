@@ -18,7 +18,7 @@ interface PaymentModalProps {
   campaignId?: string;
   penaltyIds?: string[];
   memberId?: string;
-  bankDetails?: { account: string; accountNo: string; reference: string };
+  bankDetails?: { account: string; accountNo: string; reference: string; paybill?: string };
   onSuccess?: () => void;
 }
 
