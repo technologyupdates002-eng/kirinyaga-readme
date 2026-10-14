@@ -341,6 +341,14 @@ class TreasurerPortalController extends PortalController
         $this->requireAnyRole($request, ['treasurer', 'admin']);
 
         $identity = $this->identity($request);
+        if (! $request->hasFile('file')) {
+            // Chunked JSON rows from the browser importer use the existing validated import flow.
+            $response = app(\App\Http\Controllers\Api\ImportController::class)
+                ->importBankStatement(app(\App\Http\Requests\BankStatementImportRequest::class));
+            \App\Observers\FinancialChangeObserver::bump();
+
+            return $response;
+        }
         $request->validate(['file' => 'required|file|mimes:csv,txt|max:10240']);
         $file = $request->file('file');
         $fh = fopen($file->getRealPath(), 'r');
