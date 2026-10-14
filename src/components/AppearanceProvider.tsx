@@ -10,9 +10,6 @@ export const backgrounds: AppearanceTheme[] = [
   { name: 'Golden', theme: 'gold', url: '/images/themes/gold.webp', swatch: '#c78c27' },
   { name: 'Crimson', theme: 'crimson', url: '/images/themes/crimson.png', swatch: '#ac193c' },
   { name: 'Pearl', theme: 'pearl', url: '/images/themes/pearl.webp', swatch: '#b59b55' },
-  { name: 'Aurora', theme: 'aurora', url: '/images/image%20copy%202.png', swatch: '#36c8bd' },
-  { name: 'Cloud', theme: 'cloud', url: '/images/image.png', swatch: '#6687d5' },
-  { name: 'Focus', theme: 'focus', url: '/images/image%20copy.png', swatch: '#416bc9' },
 ];
 
 type AppearanceContextValue = {
