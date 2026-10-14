@@ -80,8 +80,12 @@ class TreasurerPortalController extends PortalController
         if (! $c) {
             throw new HttpException(404, 'not_found', 'Contribution not found.');
         }
-        // Reuse the audited adjustment service so ledgers stay consistent.
-        $request->merge(['contribution_id' => $id, 'member_id' => $c->member_id, 'new_amount' => $data['amount']]);
+        // Reuse the audited adjustment service: convert "new amount" into a signed delta.
+        $delta = round((float) $data['amount'] - (float) $c->amount, 2);
+        if ($delta == 0.0) {
+            return response()->json($this->ok('No change needed.'));
+        }
+        $request->merge(['member_id' => $c->member_id, 'amount' => abs($delta), 'direction' => $delta > 0 ? 'add' : 'reduce', 'category' => 'contribution', 'reason' => mb_substr($data['reason'], 0, 160)]);
 
         return app(\App\Http\Controllers\Api\ContributionAdjustmentController::class)->store($request);
     }
@@ -248,7 +252,7 @@ class TreasurerPortalController extends PortalController
     {
         $this->requireAnyRole($request, self::ROLES);
 
-        return app(\App\Http\Controllers\Api\BankStatementImportHistoryController::class)->show($request, $id);
+        return response()->json(DB::table('member_import_rows')->where('batch_id', $id)->orderBy('row_number')->limit(2000)->get());
     }
 
     public function bankSyncStatus(Request $request): JsonResponse
@@ -269,7 +273,12 @@ class TreasurerPortalController extends PortalController
     {
         $this->requireAnyRole($request, ['treasurer', 'admin']);
         // Heavy statement pull runs on the queue; the dashboard polls status.
-        SyncBankStatement::dispatch();
+        $account = (string) config('coop.account_number', env('COOP_ACCOUNT_NUMBER', ''));
+        if ($account === '') {
+            throw new HttpException(422, 'bank_not_configured', 'Bank account number is not configured on the server.');
+        }
+        $from = (string) (DB::table('bank_sync_audit')->where('status', 'completed')->max('to_date') ?? now()->subDays(30)->toDateString());
+        SyncBankStatement::dispatch($account, substr($from, 0, 10), now()->toDateString());
 
         return response()->json($this->ok('Bank sync started. Results appear in a moment.', ['imported' => 0]), 202);
     }
@@ -331,7 +340,22 @@ class TreasurerPortalController extends PortalController
     {
         $this->requireAnyRole($request, ['treasurer', 'admin']);
 
-        return app(\App\Http\Controllers\Api\ImportController::class)->bankStatement($request);
+        $identity = $this->identity($request);
+        $request->validate(['file' => 'required|file|mimes:csv,txt|max:10240']);
+        $file = $request->file('file');
+        $fh = fopen($file->getRealPath(), 'r');
+        $header = array_map(fn ($h) => strtolower(trim((string) $h)), fgetcsv($fh) ?: []);
+        $rows = [];
+        while (($r = fgetcsv($fh)) !== false) {
+            if ($row = @array_combine($header, $r)) {
+                $rows[] = $row;
+            }
+        }
+        fclose($fh);
+        $result = app(\App\Services\ImportService::class)->importMemberStatement($rows, 'bank_statement', $file->getClientOriginalName(), $identity['user_id']);
+        \App\Observers\FinancialChangeObserver::bump();
+
+        return response()->json(['message' => 'Bank statement imported.', 'imported' => (int) ($result['imported'] ?? count($rows)), 'data' => $result]);
     }
 
     public function walletReports(Request $request): JsonResponse
